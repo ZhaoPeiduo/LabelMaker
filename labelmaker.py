@@ -1,12 +1,11 @@
 import tkinter as tk
-from tkinter import filedialog
-from PIL import Image, ImageTk
 import os
 import argparse
+from LabelFrames import SettingFrame, ImageDisplayFrame
 
 class DataLabeler:
     def __init__(self, image_directory, labels_file, output, sep):
-        self.image_directory = image_directory
+        
         with open (labels_file) as f:
             self.possible_labels =  [l.strip() for l in f.readlines()]
         self.output = output
@@ -14,7 +13,6 @@ class DataLabeler:
         self.keymap = {chr(i): i - 48 if i < 58 else i - 55 if i < 91 else i - 61 for i in range(48, 91)}
 
         self.index = 0
-        self.image_paths = []
         self.labels = []
 
         self.window = tk.Tk()
@@ -23,18 +21,8 @@ class DataLabeler:
         self.label_var = tk.StringVar()
         self.label_var.set("")
 
-        self.control_frame = tk.Frame(self.window)
-        self.control_frame.pack()
-
-        self.load_new_button = tk.Button(self.control_frame, text="Load Folder", command=self.load_folder)
-        self.load_new_button.pack(side=tk.LEFT, padx=5)
-
-        self.exit_button = tk.Button(self.control_frame, text="Exit", command=self.exit)
-        self.window.bind("esc", lambda event: self.exit_button.invoke())
-        self.exit_button.pack(side=tk.LEFT, padx=5)
-
-        self.image_label = tk.Label(self.window)
-        self.image_label.pack()
+        self.setting_frame = SettingFrame(self.window)
+        self.image_display_frame = ImageDisplayFrame(self.window)
 
         self.button_frame = tk.Frame(self.window)
         self.button_frame.pack()
@@ -42,6 +30,10 @@ class DataLabeler:
         self.count_frame = tk.Frame(self.window)
         self.count_frame.pack()
         self.counters = []
+
+        self.message =  f"{self.image_count - self.index} images remaining"
+        self.message_frame = tk.Label(self.window, textvariable=self.message)
+        self.message_frame.pack()
 
         for index, label in enumerate(self.possible_labels):
             button = tk.Button(self.button_frame, text=label, command=lambda idx=index:self.assign_label(idx))
@@ -52,18 +44,16 @@ class DataLabeler:
             label.pack(side=tk.LEFT, padx=10)
             self.counters.append(counter) 
 
-    def load_folder(self):
-        folder_path = filedialog.askdirectory()
-        self.image_directory = folder_path
-        self.image_paths = []
-        self.index = 0
+    def load(self):
+        self.reset_variables()
         self.run()
 
-    def get_image_paths(self):
-        for filename in os.listdir(self.image_directory):
-            if filename.endswith(".jpg") or filename.endswith(".png"):
-                image_path = os.path.join(self.image_directory, filename)
-                self.image_paths.append(image_path)
+    def reset_variables(self):
+        self.image_directory = self.setting_frame.load_folder()
+        self.image_paths = []
+        self.index = 0
+        for counter in self.counters:
+            counter.set(0)
     
     def increment_y(self, counter: tk.IntVar):
         counter.set(counter.get() + 1)
@@ -80,75 +70,27 @@ class DataLabeler:
         self.index += 1
 
         if self.index < len(self.image_paths):
-            self.display_data()
+            self.image_display_frame.display_data(self.image_paths[self.index])
         else:
-            self.complete_labeling()
-
-    def display_data(self):
-        image_path = self.image_paths[self.index]
-        image = Image.open(image_path)
-        image = image.resize((400, 300))
-        tk_image = ImageTk.PhotoImage(image)
-        self.image_label.configure(image=tk_image)
-        self.image_label.image = tk_image
-
-    def complete_labeling(self):
-        self.save_labels()
+            self.save_labels()
 
     def save_labels(self):
         with open(self.output, "w") as f:
             for image_path, label in zip(self.image_paths, self.labels):
                 f.write(f"{image_path}{self.sep}{label}\n")
-
-        print("Labeling Complete!")
-        print("Labels saved to", self.output)
+        
+        self.message = f"No more images to label.Labels saved to {self.output}."
 
     def run(self):
-        self.get_image_paths()
-        if len(self.image_paths) > 0:
-            self.display_data()
+        self.setting_frame.load_folder()
+        if self.setting_frame.image_count > 0:
+            self.image_display_frame.display_data(self.image_paths[self.index])
         else:
             print("No images found in the specified directory.")
         self.window.mainloop()
-    
-    def exit(self):
-        self.window.destroy()
-    
 
 def main():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--image_directory", 
-        "-imdir", 
-        help="Input image directory",
-        default="./Dataset"
-    )
-
-    parser.add_argument(
-        "--labels", 
-        "-l", 
-        help="Class labels in .txt / .csv format, one line per label",
-        default= "./labels.txt"
-    )
-
-    parser.add_argument(
-        "--output", 
-        "-o", 
-        help="Output file name", 
-        default="./output.txt"
-    )
-
-    parser.add_argument(
-        "--sep", 
-        "-s", 
-        help="Delimiter", 
-        default=","
-    )
-    
-    args = parser.parse_args()
-
-    labeler = DataLabeler(args.image_directory, args.labels, args.output, args.sep)
+    labeler = DataLabeler()
     labeler.run()
 
 if __name__ == "__main__":
