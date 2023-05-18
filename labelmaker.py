@@ -2,7 +2,7 @@ import tkinter as tk
 import os
 from Manager import Manager
 import argparse
-from LabelFrames import SettingFrame, ImageDisplayFrame, LabelButtonFrame
+from FrameWidgets import FrameWidgets
 
 class DataLabeler:
     def __init__(self, image_directory, labels_file, output):
@@ -10,9 +10,7 @@ class DataLabeler:
         self.window.title("Manual Data Labeler")
 
         self.manager = Manager(image_directory, labels_file)
-        self.setting_frame = SettingFrame(self.window, self.manager)
-        self.image_display_frame = ImageDisplayFrame(self.window, self.manager)
-        self.label_button_frame = LabelButtonFrame(self.window, self.manager)
+        self.frame_widgets = FrameWidgets(self.window, self.manager)
 
         self.message =  f"{self.manager.image_count - self.manager.index} images remaining"
         self.message_frame = tk.Label(self.window, textvariable=self.message)
@@ -26,18 +24,14 @@ class DataLabeler:
         self.increment_y(self.manager.counters[index])
         self.manager.index += 1
         if self.manager.index < self.manager.image_count:
-            self.image_display_frame.display_data(self.manager.image_paths[self.manager.index])
+            self.frame_widgets.display_data(self.manager.image_paths[self.manager.index])
         else:
-            self.setting_frame.save_labels()
+            self.frame_widgets.save_labels()
 
     def run(self):
-        self.setting_frame.read_images()
-        self.setting_frame.read_labels()
-        self.label_button_frame.initialize_buttons(self.assign_label)
-        if self.manager.image_count > 0:
-            self.image_display_frame.display_data(self.manager.image_paths[self.manager.index])
-        else:
-            print("No images found in the specified directory.")
+        self.frame_widgets.read_images()
+        self.frame_widgets.read_labels()
+        self.frame_widgets.initialize_buttons(self.assign_label)
         self.window.mainloop()
 
 def main():
