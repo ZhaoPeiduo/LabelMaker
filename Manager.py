@@ -6,6 +6,10 @@ class Manager:
         self.image_paths = []
         self.image_count = 0
         self.possible_labels = []
+        self.counters = []
+        self.index = 0
+        self.labels = []
+        
         if image_directory:
             self.load_images(image_directory)
 
@@ -23,4 +27,26 @@ class Manager:
         with open(label_file) as f:
             self.possible_labels =  [l.strip() for l in f.readlines()]
     
+    def save_labels(self, save_file):
+        for image_path, label in zip(self.image_paths, self.labels):
+            save_file.write(f"{image_path},{label}\n")
+        print(f"Labels saved to {save_file.name}")        
+        # self.message = f"No more images to label.Labels saved to {self.output}."
+
+    def reset_images(self):
+        self.image_paths = []
+        self.image_count = 0
+        self.index = 0
+
+    def reset_labels(self):
+        self.possible_labels = []
+        self.counters = []
+
+    def reset_output(self):
+        self.labels = []
+
+    def reset_all(self):
+        self.reset_images()
+        self.reset_labels()
+        self.reset_output()
     
