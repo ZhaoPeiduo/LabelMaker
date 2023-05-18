@@ -13,7 +13,7 @@ class DataLabeler:
     def run(self):
         self.frame_widgets.read_images()
         self.frame_widgets.read_labels()
-        self.frame_widgets.initialize_buttons(self.assign_label)
+        self.frame_widgets.initialize_buttons()
         self.window.mainloop()
 
 def main():

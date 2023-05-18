@@ -40,9 +40,9 @@ class FrameWidgets:
         self.message_frame = tk.Label(self.window, textvariable=self.message)
         self.message_frame.pack()
 
-    def initialize_buttons(self, assign_label_func):
+    def initialize_buttons(self):
         for index, label in enumerate(self.manager.possible_labels):
-            button = tk.Button(self.button_frame, text=label, command=lambda idx=index:assign_label_func(idx))
+            button = tk.Button(self.button_frame, text=label, command=lambda idx=index:self.assign_label(idx))
             self.window.bind(str(self.KEYMAP[str(index + 1)]), lambda event, btn=button: btn.invoke())
             button.pack(side=tk.LEFT, padx=5) 
             counter = tk.IntVar(value=0)
@@ -87,7 +87,7 @@ class FrameWidgets:
 
     def assign_label(self, index):
         if self.manager.index == self.manager.image_count:
-            self.frame_widgets.save_labels()
+            self.save_labels()
             return
         self.manager.labels.append(self.manager.possible_labels[index])
         self.manager.counters[index].set(self.manager.counters[index].get() + 1)
