@@ -1,13 +1,10 @@
 import tkinter as tk
 import os
-import argparse
+from Manager import Manager
 from LabelFrames import SettingFrame, ImageDisplayFrame
 
 class DataLabeler:
     def __init__(self, image_directory, labels_file, output, sep):
-        
-        with open (labels_file) as f:
-            self.possible_labels =  [l.strip() for l in f.readlines()]
         self.output = output
         self.sep = sep
         self.keymap = {chr(i): i - 48 if i < 58 else i - 55 if i < 91 else i - 61 for i in range(48, 91)}

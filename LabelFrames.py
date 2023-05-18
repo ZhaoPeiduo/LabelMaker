@@ -4,29 +4,29 @@ from tkinter import filedialog
 import os
 
 class SettingFrame:
-    def __init__(self, window, image_directory) -> None:
+    def __init__(self, window, manager) -> None:
         self.window = window
-        self.image_directory = image_directory
-        self.image_paths = []
-        
+        self.manager = manager
+
         self.control_frame = tk.Frame(self.window)
         self.control_frame.pack()
 
-        self.load_new_button = tk.Button(self.control_frame, text="Load Folder", command=self.load_folder)
-        self.load_new_button.pack(side=tk.LEFT, padx=5)
+        self.read_new_button = tk.Button(self.control_frame, text="Load Folder", command=self.read_images)
+        self.read_new_button.pack(side=tk.LEFT, padx=5)
 
         self.exit_button = tk.Button(self.control_frame, text="Exit", command=self.exit)
         self.window.bind("<Escape>", lambda event: self.exit_button.invoke())
         self.exit_button.pack(side=tk.LEFT, padx=5)
     
-    def load_folder(self):
-        self.image_directory = filedialog.askdirectory()
-        for filename in os.listdir(self.image_directory):
-            if filename.endswith(".jpg") or filename.endswith(".png"):
-                image_path = os.path.join(self.image_directory, filename)
-                self.image_paths.append(image_path)
-        self.image_count = len(self.image_paths)
-    
+    def read_images(self):
+        image_directory = filedialog.askdirectory()
+        self.manager.load_images(image_directory)
+
+    def read_labels(self):
+        label_file = filedialog.askopenfilename().name
+        self.manager.load_labels(label_file)
+
+
     def exit(self):
         self.window.destroy()
 
