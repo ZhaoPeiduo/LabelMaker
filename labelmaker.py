@@ -11,10 +11,6 @@ class DataLabeler:
 
         self.manager = Manager(image_directory, labels_file)
         self.frame_widgets = FrameWidgets(self.window, self.manager)
-
-        self.message =  f"{self.manager.image_count - self.manager.index} images remaining"
-        self.message_frame = tk.Label(self.window, textvariable=self.message)
-        self.message_frame.pack()
     
     def increment_y(self, counter: tk.IntVar):
         counter.set(counter.get() + 1)

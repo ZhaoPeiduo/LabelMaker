@@ -32,6 +32,10 @@ class FrameWidgets:
         self.count_frame = tk.Frame(self.window)
         self.count_frame.pack()
 
+        self.message = f"{self.manager.image_count - self.manager.index} images remaining"
+        self.message_frame = tk.Label(self.window, textvariable=self.message)
+        self.message_frame.pack()
+
     def initialize_buttons(self, assign_label_func):
         self.button_frame.pack_forget()
         for index, label in enumerate(self.manager.possible_labels):
