@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import filedialog
 from PIL import Image, ImageTk
 import os
 import argparse
@@ -22,6 +23,16 @@ class DataLabeler:
         self.label_var = tk.StringVar()
         self.label_var.set("")
 
+        self.control_frame = tk.Frame(self.window)
+        self.control_frame.pack()
+
+        self.load_new_button = tk.Button(self.control_frame, text="Load Folder", command=self.load_folder)
+        self.load_new_button.pack(side=tk.LEFT, padx=5)
+
+        self.exit_button = tk.Button(self.control_frame, text="Exit", command=self.exit)
+        self.window.bind("esc", lambda event: self.exit_button.invoke())
+        self.exit_button.pack(side=tk.LEFT, padx=5)
+
         self.image_label = tk.Label(self.window)
         self.image_label.pack()
 
@@ -40,6 +51,13 @@ class DataLabeler:
             label = tk.Label(self.count_frame, textvariable=counter)  
             label.pack(side=tk.LEFT, padx=10)
             self.counters.append(counter) 
+
+    def load_folder(self):
+        folder_path = filedialog.askdirectory()
+        self.image_directory = folder_path
+        self.image_paths = []
+        self.index = 0
+        self.run()
 
     def get_image_paths(self):
         for filename in os.listdir(self.image_directory):
@@ -75,7 +93,6 @@ class DataLabeler:
         self.image_label.image = tk_image
 
     def complete_labeling(self):
-        self.window.destroy()
         self.save_labels()
 
     def save_labels(self):
@@ -92,8 +109,11 @@ class DataLabeler:
             self.display_data()
         else:
             print("No images found in the specified directory.")
-            self.window.destroy()
         self.window.mainloop()
+    
+    def exit(self):
+        self.window.destroy()
+    
 
 def main():
     parser = argparse.ArgumentParser()
