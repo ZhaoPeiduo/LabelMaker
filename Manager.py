@@ -44,16 +44,6 @@ class Manager:
         self.image_paths = []
         self.image_count = 0
         self.index = 0
-
-    def reset_labels(self):
-        self.possible_labels = []
-        self.counters = []
-
-    def reset_output(self):
-        self.labels = []
-
-    def reset_all(self):
-        self.reset_images()
-        self.reset_labels()
-        self.reset_output()
+        for counter in self.counters:
+            counter.set(0)
     

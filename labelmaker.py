@@ -11,18 +11,16 @@ class DataLabeler:
 
         self.manager = Manager(image_directory, labels_file)
         self.frame_widgets = FrameWidgets(self.window, self.manager)
-    
-    def increment_y(self, counter: tk.IntVar):
-        counter.set(counter.get() + 1)
 
     def assign_label(self, index):
+        if self.manager.index == self.manager.image_count:
+            self.frame_widgets.save_labels()
+            return
         self.manager.labels.append(self.manager.possible_labels[index])
-        self.increment_y(self.manager.counters[index])
+        self.manager.counters[index].set(self.manager.counters[index].get() + 1)
         self.manager.index += 1
         if self.manager.index < self.manager.image_count:
             self.frame_widgets.display_data(self.manager.image_paths[self.manager.index])
-        else:
-            self.frame_widgets.save_labels()
 
     def run(self):
         self.frame_widgets.read_images()

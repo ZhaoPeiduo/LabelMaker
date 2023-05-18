@@ -19,6 +19,10 @@ class FrameWidgets:
         self.save_labels_button = tk.Button(self.control_frame, text="Save Labels", command=self.save_labels)
         self.save_labels_button.pack(side=tk.LEFT, padx=5)
 
+        self.undo_button = tk.Button(self.control_frame, text="Undo", command=self.undo)
+        self.window.bind("u", lambda event: self.undo_button.invoke())
+        self.undo_button.pack(side=tk.LEFT, padx=5)
+
         self.exit_button = tk.Button(self.control_frame, text="Exit", command=self.exit)
         self.window.bind("<Escape>", lambda event: self.exit_button.invoke())
         self.exit_button.pack(side=tk.LEFT, padx=5)
@@ -60,16 +64,13 @@ class FrameWidgets:
 
     def read_labels(self):
         label_file = filedialog.askopenfilename()
-        self.manager.reset_labels()
         self.manager.load_labels(label_file)
  
     def save_labels(self):
         save_file = filedialog.asksaveasfile()
         self.manager.save_labels(save_file)
-        self.manager.reset_output()
 
     def exit(self):
-        self.manager.reset_all()
         self.window.destroy()
 
     def display_data(self, image_path):
@@ -78,4 +79,10 @@ class FrameWidgets:
         tk_image = ImageTk.PhotoImage(image)
         self.image_label.configure(image=tk_image)
         self.image_label.image = tk_image
+
+    def undo(self):
+        self.manager.index -= 1
+        decrement = self.manager.possible_labels.index(self.manager.labels.pop(-1))
+        self.manager.counters[decrement].set(self.manager.counters[decrement].get() - 1)
+        self.display_data(self.manager.image_paths[self.manager.index])
    
