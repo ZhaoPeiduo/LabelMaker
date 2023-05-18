@@ -3,19 +3,13 @@ import os
 import sys
 
 class Manager:
-    def __init__(self, image_directory=None, label_file=None) -> None:
+    def __init__(self) -> None:
         self.image_paths = []
         self.image_count = 0
         self.possible_labels = []
         self.counters = []
         self.index = 0
         self.labels = []
-        
-        if image_directory:
-            self.load_images(image_directory)
-
-        if label_file:
-            self.load_labels(label_file)
          
     def load_images(self, image_directory):
         for filename in os.listdir(image_directory):

@@ -41,7 +41,6 @@ class FrameWidgets:
         self.message_frame.pack()
 
     def initialize_buttons(self, assign_label_func):
-        self.button_frame.pack_forget()
         for index, label in enumerate(self.manager.possible_labels):
             button = tk.Button(self.button_frame, text=label, command=lambda idx=index:assign_label_func(idx))
             self.window.bind(str(self.KEYMAP[str(index + 1)]), lambda event, btn=button: btn.invoke())
@@ -53,7 +52,7 @@ class FrameWidgets:
         self.button_frame.pack(side=tk.BOTTOM)
 
     def read_images(self):
-        image_directory = filedialog.askdirectory()
+        image_directory = filedialog.askdirectory(title="Select images to be labeled")
         self.manager.reset_images()
         self.manager.load_images(image_directory)
 
@@ -63,11 +62,11 @@ class FrameWidgets:
             print("No images found in the specified directory.")
 
     def read_labels(self):
-        label_file = filedialog.askopenfilename()
+        label_file = filedialog.askopenfilename(title="Select file containing possible labels")
         self.manager.load_labels(label_file)
  
     def save_labels(self):
-        save_file = filedialog.asksaveasfile()
+        save_file = filedialog.asksaveasfile(title="Select location to save labels")
         self.manager.save_labels(save_file)
 
     def exit(self):
@@ -85,4 +84,14 @@ class FrameWidgets:
         decrement = self.manager.possible_labels.index(self.manager.labels.pop(-1))
         self.manager.counters[decrement].set(self.manager.counters[decrement].get() - 1)
         self.display_data(self.manager.image_paths[self.manager.index])
+
+    def assign_label(self, index):
+        if self.manager.index == self.manager.image_count:
+            self.frame_widgets.save_labels()
+            return
+        self.manager.labels.append(self.manager.possible_labels[index])
+        self.manager.counters[index].set(self.manager.counters[index].get() + 1)
+        self.manager.index += 1
+        if self.manager.index < self.manager.image_count:
+            self.display_data(self.manager.image_paths[self.manager.index])
    
