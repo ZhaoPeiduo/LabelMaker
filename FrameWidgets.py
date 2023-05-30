@@ -3,6 +3,8 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 from Manager import Manager
 import os
+import shutil
+import numpy as np
 
 class FrameWidgets:
     KEYMAP = {chr(i): i - 48 if i < 58 else i - 55 if i < 91 else i - 61 for i in range(48, 91)}
@@ -34,29 +36,39 @@ class FrameWidgets:
         self.image_label = tk.Label(self.window)
         self.image_label.pack()
 
-        self.button_frame = tk.Frame(self.window)
-        self.button_frame.pack()
+        self.label_button_frame = tk.Frame(self.window)
+        self.archive_button_frame = tk.Frame(self.window)
 
         self.count_frame = tk.Frame(self.window)
         self.count_frame.pack()
 
         self.message = f"{self.manager.image_count - self.manager.index} images remaining"
         self.message_frame = tk.Label(self.window, textvariable=self.message)
-        self.message_frame.pack(side=tk.BOTTOM)
+        self.message_frame.pack()
 
-    def initialize_buttons(self):
+    def initialize_label_buttons(self):
         for index, label in enumerate(self.manager.possible_labels):
-            button = tk.Button(self.button_frame, text=label, command=lambda idx=index:self.assign_label(idx))
-            self.window.bind(str(self.KEYMAP[str(index + 1)]), lambda event, btn=button: btn.invoke())
-            button.pack(side=tk.LEFT, padx=5) 
+            label_button = tk.Button(self.label_button_frame, text=label, command=lambda idx=index:self.assign_label(idx))
+            self.window.bind(str(self.KEYMAP[str(index + 1)]), lambda event, btn=label_button: btn.invoke())
+            label_button.pack(side=tk.LEFT, padx=5) 
             counter = tk.IntVar(value=0)
             label = tk.Label(self.count_frame, textvariable=counter)  
             label.pack(side=tk.LEFT, padx=10)
-            self.manager.counters.append(counter) 
-        self.button_frame.pack(side=tk.BOTTOM)
+            self.manager.label_counters.append(counter) 
+        self.label_button_frame.pack(side=tk.BOTTOM)
+
+    def initialize_archive_button(self):
+        archive_button = tk.Button(self.archive_button_frame, text="Archive", command=self.archive)
+        self.window.bind("a", lambda event : archive_button.invoke())
+        archive_button.pack(side=tk.LEFT, padx=5) 
+        archive_label = tk.Label(self.archive_button_frame, textvariable=self.manager.archive_counter)
+        archive_label.pack(side=tk.LEFT, padx=5)
+        self.archive_button_frame.pack(side=tk.BOTTOM)
+
 
     def read_images(self):
         image_directory = filedialog.askdirectory(title="Select images to be labeled")
+        self.image_directory = image_directory
         self.manager.reset_images()
         self.manager.load_images(image_directory)
 
@@ -86,42 +98,84 @@ class FrameWidgets:
         self.image_label.configure(image=tk_image)
         self.image_label.image = tk_image
 
-    def undo(self):
-        self.manager.index -= 1
-        if self.mode == "single":
-            decrement = self.manager.possible_labels.index(self.manager.labels.pop(-1))
-            self.manager.counters[decrement].set(self.manager.counters[decrement].get() - 1)
-        else:
-            for label, value in self.manager.labels.pop(-1).items():
-                print(self.manager.labels)
-                decrement = self.manager.possible_labels.index(label)
-                self.manager.counters[decrement].set(self.manager.counters[decrement].get() - 1)
-        self.display_data(self.manager.image_paths[self.manager.index])
-    
-    def confirm(self):
-        self.manager.labels.append(self.label_buffer)
-        self.label_buffer = {key : value for key, value in zip(self.manager.possible_labels, 
-                                                                   [0 for _ in range(len(self.manager.possible_labels))])}
-        self.manager.index += 1
+    def hit_end(self):
         if self.manager.index == self.manager.image_count:
             self.save_labels()
+            return True
+        return False
+        
+
+    def next_image(self):
+        if self.hit_end():
+            return
+        
+        self.manager.index += 1
+        
+        if self.hit_end():
             return
         
         self.display_data(self.manager.image_paths[self.manager.index])
 
+    def undo(self):
+        if self.manager.index == 0:
+            print("Nothing to undo!")
+            return
+
+        self.manager.index -= 1
+        current_label = self.manager.labels.pop(-1)
+        curr_image_path = self.manager.image_paths[self.manager.index]
+        
+        if not os.path.exists(curr_image_path):
+            archive_to_undo = os.path.join('./archive', os.path.basename(self.image_directory), os.path.basename(curr_image_path))
+            shutil.move(archive_to_undo, os.path.dirname(curr_image_path))
+
+        elif self.mode == "single":
+            decrement = self.manager.possible_labels.index(current_label)
+            self.manager.label_counters[decrement].set(self.manager.label_counters[decrement].get() - 1)
+        
+        else:
+            for label, value in current_label.items():
+                print(self.manager.labels)
+                decrement = self.manager.possible_labels.index(label)
+                self.manager.label_counters[decrement].set(self.manager.label_counters[decrement].get() - 1)
+        
+        self.display_data(self.manager.image_paths[self.manager.index])
+    
+    def confirm(self):
+        if self.hit_end():
+            return
+        
+        self.manager.labels.append(self.label_buffer)
+        self.label_buffer = {key : value for key, value in zip(self.manager.possible_labels, 
+                                                                   [0 for _ in range(len(self.manager.possible_labels))])}
+        self.next_image()
+
     def assign_label(self, index):
-        if self.manager.index == self.manager.image_count:
-            self.save_labels()
+        if self.hit_end():
             return
         
         label_to_add = self.manager.possible_labels[index]
         if self.mode == "single":
             self.manager.labels.append(label_to_add)
-            self.manager.counters[index].set(self.manager.counters[index].get() + 1)
-            self.manager.index += 1
-            self.display_data(self.manager.image_paths[self.manager.index])
-        elif self.label_buffer[label_to_add] == 0:
-            self.manager.counters[index].set(self.manager.counters[index].get() + 1)
+            self.manager.label_counters[index].set(self.manager.label_counters[index].get() + 1)
+            self.next_image()
+
+        elif self.mode == "multi" and self.label_buffer[label_to_add] == 0:
+            self.manager.label_counters[index].set(self.manager.label_counters[index].get() + 1)
             self.label_buffer[label_to_add] += 1
+    
+    def archive(self):
+        if self.hit_end():
+            return
         
+        assert self.image_directory is not None
+        if not os.path.exists('./archive'):
+            os.mkdir('./archive')
+        archive_folder = './archive/'+ os.path.basename(self.image_directory)
+        if not os.path.exists(archive_folder):
+            os.mkdir(archive_folder)
+        image_path_to_archive = self.manager.image_paths[self.manager.index]
+        shutil.move(image_path_to_archive, archive_folder)
+        self.manager.labels.append(np.nan)
+        self.next_image()
    

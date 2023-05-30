@@ -7,7 +7,8 @@ class Manager:
         self.image_paths = []
         self.image_count = 0
         self.possible_labels = []
-        self.counters = []
+        self.label_counters = []
+        self.archive_counter = tk.IntVar(value=0)
         self.index = 0
         self.labels = []
          
@@ -38,6 +39,6 @@ class Manager:
         self.image_paths = []
         self.image_count = 0
         self.index = 0
-        for counter in self.counters:
+        for counter in self.label_counters:
             counter.set(0)
     
