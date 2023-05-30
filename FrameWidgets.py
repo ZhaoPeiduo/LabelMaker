@@ -4,7 +4,6 @@ from tkinter import filedialog
 from Manager import Manager
 import os
 import shutil
-import numpy as np
 
 class FrameWidgets:
     KEYMAP = {chr(i): i - 48 if i < 58 else i - 55 if i < 91 else i - 61 for i in range(48, 91)}
@@ -104,7 +103,6 @@ class FrameWidgets:
             return True
         return False
         
-
     def next_image(self):
         if self.hit_end():
             return
@@ -128,6 +126,7 @@ class FrameWidgets:
         if not os.path.exists(curr_image_path):
             archive_to_undo = os.path.join('./archive', os.path.basename(self.image_directory), os.path.basename(curr_image_path))
             shutil.move(archive_to_undo, os.path.dirname(curr_image_path))
+            self.manager.archive_counter.set(self.manager.archive_counter.get() - 1)
 
         elif self.mode == "single":
             decrement = self.manager.possible_labels.index(current_label)
@@ -176,6 +175,7 @@ class FrameWidgets:
             os.mkdir(archive_folder)
         image_path_to_archive = self.manager.image_paths[self.manager.index]
         shutil.move(image_path_to_archive, archive_folder)
-        self.manager.labels.append(np.nan)
+        self.manager.labels.append("Archived")
+        self.manager.archive_counter.set(self.manager.archive_counter.get() + 1)
         self.next_image()
    
