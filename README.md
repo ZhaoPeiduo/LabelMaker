@@ -12,5 +12,3 @@ Support keyboard shortcuts:
     - Esc for quitting the GUI
     - u for undo
     - enter / return to proceed to next image
-
-
