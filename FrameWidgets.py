@@ -42,7 +42,7 @@ class FrameWidgets:
 
         self.message = f"{self.manager.image_count - self.manager.index} images remaining"
         self.message_frame = tk.Label(self.window, textvariable=self.message)
-        self.message_frame.pack()
+        self.message_frame.pack(side=tk.BOTTOM)
 
     def initialize_buttons(self):
         for index, label in enumerate(self.manager.possible_labels):
@@ -71,7 +71,6 @@ class FrameWidgets:
         if self.mode == "multi":
             self.label_buffer = {key : value for key, value in zip(self.manager.possible_labels, 
                                                                    [0 for _ in range(len(self.manager.possible_labels))])}
-            print(self.label_buffer)
  
     def save_labels(self):
         save_file = filedialog.asksaveasfile(title="Select location to save labels")
