@@ -33,7 +33,6 @@ class Manager:
                 image_path = image_path.replace('\\', '/')
             save_file.write(f"{image_path},{label}\n")
         print(f"Labels saved to {save_file.name}")        
-        # self.message = f"No more images to label.Labels saved to {self.output}."
 
     def reset_images(self):
         self.image_paths = []

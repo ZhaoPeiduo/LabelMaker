@@ -41,10 +41,6 @@ class FrameWidgets:
         self.count_frame = tk.Frame(self.window)
         self.count_frame.pack()
 
-        self.message = f"{self.manager.image_count - self.manager.index} images remaining"
-        self.message_frame = tk.Label(self.window, textvariable=self.message)
-        self.message_frame.pack()
-
     def initialize_label_buttons(self):
         for index, label in enumerate(self.manager.possible_labels):
             label_button = tk.Button(self.label_button_frame, text=label, command=lambda idx=index:self.assign_label(idx))
@@ -63,7 +59,6 @@ class FrameWidgets:
         archive_label = tk.Label(self.archive_button_frame, textvariable=self.manager.archive_counter)
         archive_label.pack(side=tk.LEFT, padx=5)
         self.archive_button_frame.pack(side=tk.BOTTOM)
-
 
     def read_images(self):
         image_directory = filedialog.askdirectory(title="Select images to be labeled")
