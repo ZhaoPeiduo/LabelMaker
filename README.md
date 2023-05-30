@@ -13,3 +13,8 @@ Support keyboard shortcuts:
  - a for archiving images that are wrongly collected / irrelevant. "Archived" label will be assigned.
  - enter / return to proceed to next image
 
+To run the label maker:
+```
+python label_maker.py 
+python lanel_maker.py -m multi
+```
